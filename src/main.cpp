@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	getcwd(cwd, sizeof(cwd));
 	
 	strcpy(szPidFileName, cwd);
-	strcat(szPidFileName, "./bctl.pid");
+	strcat(szPidFileName, "/bctl.pid");
 
 	printf("\nRunning %s from %s\n", pszAppName, cwd);
 
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 	fptr_pid = fopen(szPidFileName, "wt");
 	
 	if (fptr_pid == NULL) {
-		fprintf(stderr, "Failed to open PID file\n");
+		fprintf(stderr, "Failed to open PID file %s\n", szPidFileName);
 		fflush(stderr);
 	}
 	else {
