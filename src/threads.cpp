@@ -75,8 +75,7 @@ void RaspiStillThread::launchCapture()
 	args[8] = szISO;										// ISO
 	args[9]	= szOutputTemplate;								// Output filename format
 
-	fprintf(
-		stderr,
+	printf(
 		"Running process %s %s %s %s %s %s %s %s %s %s", 
 		args[0], 
 		args[1], 
@@ -107,7 +106,7 @@ void RaspiStillThread::launchCapture()
 		(const char *)NULL);
 
 	if (rtn) {
-		fprintf(stderr, "Failed to execute capture process");
+		printf("Failed to execute capture process");
 		throw bctl_error("Failed to execute process", __FILE__, __LINE__);
 	}
 }
