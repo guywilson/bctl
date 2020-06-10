@@ -107,7 +107,7 @@ void RaspiStillThread::launchCapture()
 		(const char *)NULL);
 
 	if (rtn) {
-		fprintf(stderr, "Failed to execute capture process\n");
+		fprintf(stderr, "Failed to execute capture process %s\n", strerror(errno));
 		throw bctl_error("Failed to execute process", __FILE__, __LINE__);
 	}
 }
