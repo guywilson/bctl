@@ -56,13 +56,13 @@ void RaspiStillThread::launchCapture()
 	strcat(szWidth, cfg.getValue("capture.hres"));
 
 	strcpy(szHeight, "-h ");
-	strcat(szWidth, cfg.getValue("capture.vres"));
+	strcat(szHeight, cfg.getValue("capture.vres"));
 
 	strcpy(szISO, "-ISO ");
-	strcat(szWidth, cfg.getValue("capture.iso"));
+	strcat(szISO, cfg.getValue("capture.iso"));
 
-	strcpy(szISO, "-o ");
-	strcat(szWidth, cfg.getValue("capture.outputtemplate"));
+	strcpy(szOutputTemplate, "-o ");
+	strcat(szOutputTemplate, cfg.getValue("capture.outputtemplate"));
 
 	args[0] = cfg.getValue("capture.progname");				// Name of the executable
 	args[1] = "-n";											// No preview
@@ -77,7 +77,7 @@ void RaspiStillThread::launchCapture()
 
 	fprintf(
 		stderr,
-		"Running process %s %s %s %s %s %s %s %s %s %s", 
+		"Running process %s %s %s %s %s %s %s %s %s %s\n", 
 		args[0], 
 		args[1], 
 		args[2], 
@@ -107,7 +107,7 @@ void RaspiStillThread::launchCapture()
 		(const char *)NULL);
 
 	if (rtn) {
-		fprintf(stderr, "Failed to execute capture process");
+		fprintf(stderr, "Failed to execute capture process\n");
 		throw bctl_error("Failed to execute process", __FILE__, __LINE__);
 	}
 }
@@ -133,7 +133,7 @@ void * RaspiStillThread::run()
 
 			this->launchCapture();
 
-			fprintf(stderr, "Child process forked with pid %d", this->_pid);
+			fprintf(stderr, "Child process forked with pid %d\n", this->_pid);
 		}
 	}
 	catch (bctl_error & e) {
