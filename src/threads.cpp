@@ -36,48 +36,31 @@ void ThreadManager::killThreads()
 
 void RaspiStillThread::launchCapture()
 {
-	const char * 	args[10];
-	char			szEncoding[8];
-	char			szQuality[8];
-	char			szWidth[8];
-	char			szHeight[8];
-	char			szISO[9];
-	char			szOutputTemplate[64];
+	const char * 	args[17];
 
 	ConfigManager & cfg = ConfigManager::getInstance();
-
-	strcpy(szEncoding, "-e ");
-	strcat(szEncoding, cfg.getValue("capture.encoding"));
-
-	strcpy(szQuality, "-q ");
-	strcat(szQuality, cfg.getValue("capture.jpgquality"));
-
-	strcpy(szWidth, "-w ");
-	strcat(szWidth, cfg.getValue("capture.hres"));
-
-	strcpy(szHeight, "-h ");
-	strcat(szHeight, cfg.getValue("capture.vres"));
-
-	strcpy(szISO, "-ISO ");
-	strcat(szISO, cfg.getValue("capture.iso"));
-
-	strcpy(szOutputTemplate, "-o ");
-	strcat(szOutputTemplate, cfg.getValue("capture.outputtemplate"));
 
 	args[0] = cfg.getValue("capture.progname");				// Name of the executable
 	args[1] = "-n";											// No preview
 	args[2] = "-s";											// Wait for signal to capture
-	args[3] = "-e jpg";									// Output image format
-	args[4] = "-q 75";									// JPEG quality
-	args[5] = "-fs 1";										// Start frame number
-	args[6] = "-w 1280";										// Image width
-	args[7] = "-h 720";										// Image height
-	args[8] = "-ISO 200";										// ISO
-	args[9]	= "-o img_%04d.jpg";								// Output filename format
+	args[3] = "-e";											// Output image format
+	args[4] = cfg.getValue("capture.encoding");
+	args[5] = "-q";											// JPEG quality
+	args[6] = cfg.getValue("capture.jpgquality");
+	args[7] = "-fs";										// Start frame number
+	args[8] = "1";
+	args[9] = "-w";											// Image width
+	args[10] = cfg.getValue("capture.hres");
+	args[11] = "-h";										// Image height
+	args[12] = cfg.getValue("capture.vres");
+	args[13] = "-ISO";										// ISO
+	args[14] = cfg.getValue("capture.iso");
+	args[15] = "-o";										// Output filename format
+	args[16] = cfg.getValue("capture.outputtemplate");
 
 	fprintf(
 		stderr,
-		"Running process: %s %s %s %s %s %s %s %s %s %s\n", 
+		"Running process: %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n", 
 		args[0], 
 		args[1], 
 		args[2], 
@@ -87,7 +70,14 @@ void RaspiStillThread::launchCapture()
 		args[6], 
 		args[7], 
 		args[8],
-		args[9]);
+		args[9],
+		args[10],
+		args[11],
+		args[12],
+		args[13],
+		args[14],
+		args[15],
+		args[16]);
 
 	/*
 	** Execute the capture program...
@@ -104,6 +94,13 @@ void RaspiStillThread::launchCapture()
 		args[7], 
 		args[8], 
 		args[9], 
+		args[10],
+		args[11],
+		args[12],
+		args[13],
+		args[14],
+		args[15],
+		args[16],
 		(const char *)NULL);
 
 	if (rtn) {
