@@ -75,7 +75,8 @@ void RaspiStillThread::launchCapture()
 	args[8] = szISO;										// ISO
 	args[9]	= szOutputTemplate;								// Output filename format
 
-	printf(
+	fprintf(
+		stderr,
 		"Running process %s %s %s %s %s %s %s %s %s %s", 
 		args[0], 
 		args[1], 
@@ -106,7 +107,7 @@ void RaspiStillThread::launchCapture()
 		(const char *)NULL);
 
 	if (rtn) {
-		printf("Failed to execute capture process");
+		fprintf(stderr, "Failed to execute capture process");
 		throw bctl_error("Failed to execute process", __FILE__, __LINE__);
 	}
 }
@@ -130,7 +131,9 @@ void * RaspiStillThread::run()
 			*/
 			this->_pid = getpid();
 
-			log.logDebug("Child process forked with pid %d", this->_pid);
+			this->launchCapture();
+
+			fprintf(stderr, "Child process forked with pid %d", this->_pid);
 		}
 	}
 	catch (bctl_error & e) {
