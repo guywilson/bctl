@@ -11,7 +11,7 @@ private:
     void        launchCapture();
 
 public:
-    RaspiStillThread() : PosixThread(true) {}
+    RaspiStillThread() : PosixThread(false) {}
 
     void *      run();
 
