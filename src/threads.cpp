@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <signal.h>
+#include <errno.h>
 
 #include "configmgr.h"
 #include "logger.h"
@@ -128,9 +129,9 @@ void * RaspiStillThread::run()
 			*/
 			this->_pid = getpid();
 
-			this->launchCapture();
-
 			fprintf(stderr, "Child process forked with pid %d\n", this->_pid);
+
+			this->launchCapture();
 		}
 	}
 	catch (bctl_error & e) {
