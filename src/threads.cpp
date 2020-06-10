@@ -44,7 +44,6 @@ void RaspiStillThread::launchCapture()
 	char			szISO[9];
 	char			szOutputTemplate[64];
 
-	Logger & log = Logger::getInstance();
 	ConfigManager & cfg = ConfigManager::getInstance();
 
 	strcpy(szEncoding, "-e ");
@@ -76,7 +75,8 @@ void RaspiStillThread::launchCapture()
 	args[8] = szISO;										// ISO
 	args[9]	= szOutputTemplate;								// Output filename format
 
-	log.logDebug(
+	fprintf(
+		stderr,
 		"Running process %s %s %s %s %s %s %s %s %s %s", 
 		args[0], 
 		args[1], 
@@ -107,7 +107,7 @@ void RaspiStillThread::launchCapture()
 		(const char *)NULL);
 
 	if (rtn) {
-		log.logError("Failed to execute capture process");
+		fprintf(stderr, "Failed to execute capture process");
 		throw bctl_error("Failed to execute process", __FILE__, __LINE__);
 	}
 }
