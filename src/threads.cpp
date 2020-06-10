@@ -77,7 +77,7 @@ void RaspiStillThread::launchCapture()
 
 	fprintf(
 		stderr,
-		"Running process %s %s %s %s %s %s %s %s %s %s\n", 
+		"Running process: %s %s %s %s %s %s %s %s %s %s\n", 
 		args[0], 
 		args[1], 
 		args[2], 
