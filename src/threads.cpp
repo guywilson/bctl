@@ -67,7 +67,7 @@ void RaspiStillThread::launchCapture()
 	args[0] = cfg.getValue("capture.progname");				// Name of the executable
 	args[1] = "-n";											// No preview
 	args[2] = "-s";											// Wait for signal to capture
-	args[3] = szEncoding;									// Output image format
+//	args[3] = szEncoding;									// Output image format
 	args[4] = szQuality;									// JPEG quality
 	args[5] = "-fs 1";										// Start frame number
 	args[6] = szWidth;										// Image width
@@ -81,7 +81,7 @@ void RaspiStillThread::launchCapture()
 		args[0], 
 		args[1], 
 		args[2], 
-		args[3], 
+//		args[3], 
 		args[4], 
 		args[5], 
 		args[6], 
@@ -97,7 +97,7 @@ void RaspiStillThread::launchCapture()
 		args[0], 
 		args[1], 
 		args[2], 
-		args[3], 
+//		args[3], 
 		args[4], 
 		args[5], 
 		args[6], 
