@@ -92,7 +92,7 @@ void RaspiStillThread::launchCapture()
 	/*
 	** Execute the capture program...
 	*/
-	int rtn = execl(
+	int rtn = execlp(
 		cfg.getValue("capture.progname"), 
 		args[0], 
 		args[1], 
@@ -107,7 +107,7 @@ void RaspiStillThread::launchCapture()
 		(const char *)NULL);
 
 	if (rtn) {
-		fprintf(stderr, "Failed to execute capture process %s\n", strerror(errno));
+		fprintf(stderr, "Failed to execute capture process: [%s]\n", strerror(errno));
 		throw bctl_error("Failed to execute process", __FILE__, __LINE__);
 	}
 }
