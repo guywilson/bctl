@@ -7,7 +7,9 @@ class RaspiStillThread : public PosixThread
 {
 private:
     pid_t       _pid;
-    
+
+    void        launchCapture();
+
 public:
     RaspiStillThread() : PosixThread(true) {}
 

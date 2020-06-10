@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 	fptr_pid = fopen(szPidFileName, "wt");
 	
 	if (fptr_pid == NULL) {
-		fprintf(stderr, "Failed top open PID file\n");
+		fprintf(stderr, "Failed to open PID file\n");
 		fflush(stderr);
 	}
 	else {
