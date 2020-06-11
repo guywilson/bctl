@@ -26,7 +26,10 @@ void _capturePhoto()
 	** Send SIGUSR1 to the capture program to signal it
 	** to capture a photo...
 	*/
+	printf("In _capturePhoto()...\n");
+
 	if (_capturePID != 0) {
+		printf("Sending SIGUSR1 to process %d\n", _capturePID);
 		kill(_capturePID, SIGUSR1);
 	}
 }
@@ -184,7 +187,7 @@ void * CaptureThread::run()
 		_capturePhoto();
 
 		log.logDebug("Sleeping for %ld seconds zzzz", frequency);
-		
+
 		PosixThread::sleep(PosixThread::seconds, frequency);
 	}
 
