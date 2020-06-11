@@ -141,10 +141,13 @@ void RaspiStillThread::launchCapture()
 void * RaspiStillThread::run()
 {
 	pid_t		pid;
+	int			pipeFdArray[2];
 
 	Logger & log = Logger::getInstance();
 
 	try {
+		pipe(pipeFdArray);
+
 		pid = fork();
 
 		if (pid == -1) {
@@ -155,11 +158,26 @@ void * RaspiStillThread::run()
 			/*
 			** Child process...
 			*/
-			_capturePID = getpid();
+			close(pipeFdArray[0]);
 
-			fprintf(stderr, "Child process forked with pid %d\n", _capturePID);
+			pid = getpid();
+
+			write(pipeFdArray[1], &pid, sizeof(pid_t));
+
+			fprintf(stderr, "Child process forked with pid %d\n", pid);
 
 			this->launchCapture();
+		}
+		else {
+			/*
+			** Parent process...
+			*/
+			close(pipeFdArray[1]);
+			read(pipeFdArray[0], &pid, sizeof(pid_t));
+
+			_capturePID = pid;
+
+			log.logDebug("Got capture PID [%d] from pipe", _capturePID);
 		}
 	}
 	catch (bctl_error & e) {
