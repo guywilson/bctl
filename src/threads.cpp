@@ -172,12 +172,19 @@ void * CaptureThread::run()
 	unsigned long	frequency;
 
 	ConfigManager & cfg = ConfigManager::getInstance();
+	Logger & log = Logger::getInstance();
 
 	frequency = (unsigned long)cfg.getValueAsInteger("capture.frequency");
 
+	log.logDebug("Capture frequency read as %ld", frequency);
+
 	while (go) {
+		log.logDebug("Capturing photo");
+
 		_capturePhoto();
 
+		log.logDebug("Sleeping for %ld seconds zzzz", frequency);
+		
 		PosixThread::sleep(PosixThread::seconds, frequency);
 	}
 
