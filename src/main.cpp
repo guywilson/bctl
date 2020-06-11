@@ -180,6 +180,11 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+    /*
+    ** Fork and run the capture programe...
+    */
+    forkCaptureProg();
+
 	/*
 	 * Start threads...
 	 */

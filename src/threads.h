@@ -3,19 +3,6 @@
 #ifndef _INCL_THREADS
 #define _INCL_THREADS
 
-class RaspiStillThread : public PosixThread
-{
-private:
-    void        launchCapture();
-
-public:
-    RaspiStillThread() : PosixThread(false) {}
-
-    void *      run();
-
-    void        signalCapture();
-};
-
 class CaptureThread : public PosixThread
 {
 public:
@@ -35,7 +22,6 @@ public:
 private:
     ThreadManager() {}
 
-    RaspiStillThread *      pRaspiStillThread = NULL;
     CaptureThread *         pCaptureThread = NULL;
 
 public:
