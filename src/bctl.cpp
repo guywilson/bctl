@@ -59,8 +59,8 @@ void handleSignal(int sigNum)
 
 			wait(&captureStatus);
 			
-			log.logStatus("Capture program exited with status %d", captureStatus);
-			return;
+			log.logStatus("Capture program exited with status %d, cleaning up", captureStatus);
+			break;
 
 		case SIGINT:
 			log.logStatus("Detected SIGINT, cleaning up...");
