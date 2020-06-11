@@ -180,6 +180,11 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	if (signal(SIGCHLD, &handleSignal) == SIG_ERR) {
+		log.logFatal("Failed to register signal handler for SIGCHLD");
+		return -1;
+	}
+
     /*
     ** Fork and run the capture programe...
     */

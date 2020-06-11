@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #include "threads.h"
 #include "logger.h"
@@ -53,6 +54,14 @@ void handleSignal(int sigNum)
 	Logger & log = Logger::getInstance();
 
 	switch (sigNum) {
+		case SIGCHLD:
+			int captureStatus;
+
+			wait(&captureStatus);
+			
+			log.logStatus("Capture program exited with status %d", captureStatus);
+			return;
+
 		case SIGINT:
 			log.logStatus("Detected SIGINT, cleaning up...");
 			break;
