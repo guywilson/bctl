@@ -6,8 +6,6 @@
 class RaspiStillThread : public PosixThread
 {
 private:
-    pid_t       _pid;
-
     void        launchCapture();
 
 public:
@@ -16,6 +14,14 @@ public:
     void *      run();
 
     void        signalCapture();
+};
+
+class CaptureThread : public PosixThread
+{
+public:
+    CaptureThread() : PosixThread(true) {}
+
+    void *      run();
 };
 
 class ThreadManager
@@ -30,6 +36,7 @@ private:
     ThreadManager() {}
 
     RaspiStillThread *      pRaspiStillThread = NULL;
+    CaptureThread *         pCaptureThread = NULL;
 
 public:
     void                    startThreads();

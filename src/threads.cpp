@@ -15,6 +15,23 @@ extern "C" {
 
 using namespace std;
 
+/*
+** Global PID of capture process...
+*/
+pid_t _capturePID = 0;
+
+void _capturePhoto()
+{
+	/*
+	** Send SIGUSR1 to the capture program to signal it
+	** to capture a photo...
+	*/
+	if (_capturePID != 0) {
+		kill(_capturePID, SIGUSR1);
+	}
+}
+
+
 void ThreadManager::startThreads()
 {
 	Logger & log = Logger::getInstance();
@@ -25,6 +42,14 @@ void ThreadManager::startThreads()
 	}
 	else {
 		throw bctl_error("Failed to start RaspiStillThread", __FILE__, __LINE__);
+	}
+
+	this->pCaptureThread = new CaptureThread();
+	if (this->pCaptureThread->start()) {
+		log.logStatus("Started CaptureThread successfully");
+	}
+	else {
+		throw bctl_error("Failed to start CaptureThread", __FILE__, __LINE__);
 	}
 }
 
@@ -127,9 +152,9 @@ void * RaspiStillThread::run()
 			/*
 			** Child process...
 			*/
-			this->_pid = getpid();
+			_capturePID = getpid();
 
-			fprintf(stderr, "Child process forked with pid %d\n", this->_pid);
+			fprintf(stderr, "Child process forked with pid %d\n", _capturePID);
 
 			this->launchCapture();
 		}
@@ -141,7 +166,20 @@ void * RaspiStillThread::run()
 	return NULL;
 }
 
-void RaspiStillThread::signalCapture()
+void * CaptureThread::run()
 {
-	kill(this->_pid, SIGUSR1);
+	bool			go = true;
+	unsigned long	frequency;
+
+	ConfigManager & cfg = ConfigManager::getInstance();
+
+	frequency = (unsigned long)cfg.getValueAsInteger("capture.frequency");
+
+	while (go) {
+		_capturePhoto();
+
+		PosixThread::sleep(PosixThread::seconds, frequency);
+	}
+
+	return NULL;
 }
