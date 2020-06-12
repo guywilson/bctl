@@ -2,3 +2,4 @@
 /build
 bctl
 bctl.pid
+bctl.log
