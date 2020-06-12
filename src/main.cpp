@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <limits.h>
 #include <pthread.h>
@@ -26,6 +27,104 @@ extern "C" {
 }
 
 using namespace std;
+
+int pipeFd;
+
+void cleanup(void)
+{
+	/*
+	** Kill the threads...
+	*/
+	ThreadManager & threadMgr = ThreadManager::getInstance();
+
+	threadMgr.killThreads();
+
+	/*
+	** Close the logger...
+	*/
+	Logger & log = Logger::getInstance();
+	log.logInfo("Cleaning up and exiting...");
+	log.closeLogger();
+
+	closelog();
+
+	close(pipeFd);
+}
+
+void handleSignal(int sigNum)
+{
+	Logger & log = Logger::getInstance();
+
+	switch (sigNum) {
+		case SIGCHLD:
+			int captureStatus;
+
+			wait(&captureStatus);
+			
+			if (WIFEXITED(captureStatus)) {
+				log.logStatus("Capture program exited with status %d, cleaning up", WEXITSTATUS(captureStatus));
+			}
+			return;
+
+		case SIGINT:
+			log.logStatus("Detected SIGINT, cleaning up...");
+			break;
+
+		case SIGTERM:
+			log.logStatus("Detected SIGTERM, cleaning up...");
+			break;
+
+		case SIGUSR1:
+			/*
+			** We're interpreting this as a request to turn on/off debug logging...
+			*/
+			log.logStatus("Detected SIGUSR1...");
+
+			if (log.isLogLevel(LOG_LEVEL_INFO)) {
+				int level = log.getLogLevel();
+				level &= ~LOG_LEVEL_INFO;
+				log.setLogLevel(level);
+			}
+			else {
+				int level = log.getLogLevel();
+				level |= LOG_LEVEL_INFO;
+				log.setLogLevel(level);
+			}
+
+			if (log.isLogLevel(LOG_LEVEL_DEBUG)) {
+				int level = log.getLogLevel();
+				level &= ~LOG_LEVEL_DEBUG;
+				log.setLogLevel(level);
+			}
+			else {
+				int level = log.getLogLevel();
+				level |= LOG_LEVEL_DEBUG;
+				log.setLogLevel(level);
+			}
+			return;
+
+		case SIGUSR2:
+			/*
+			** We're interpreting this as a request to reload config...
+			*/
+			log.logStatus("Detected SIGUSR2, reloading config...");
+
+			ConfigManager & cfg = ConfigManager::getInstance();
+			cfg.readConfig();
+
+			/*
+			** The only thing we can change dynamically (at present)
+			** is the logging level...
+			*/
+			log.setLogLevel(cfg.getValue("log.level"));
+			
+			return;
+	}
+
+	cleanup();
+
+    exit(0);
+}
 
 void printUsage(char * pszAppName)
 {
@@ -51,6 +150,8 @@ int main(int argc, char *argv[])
 	bool			isDumpConfig = false;
 	char			cwd[PATH_MAX];
 	int				defaultLoggingLevel = LOG_LEVEL_INFO | LOG_LEVEL_ERROR | LOG_LEVEL_FATAL;
+	pid_t			pid;
+	char * 			args[18];
 
 	CurrentTime::initialiseUptimeClock();
 	
@@ -185,17 +286,91 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-    /*
-    ** Fork and run the capture programe...
-    */
-    forkCaptureProg();
-
 	/*
 	 * Start threads...
 	 */
 	ThreadManager & threadMgr = ThreadManager::getInstance();
 
 	threadMgr.startThreads();
+
+    /*
+    ** Fork and run the capture programe...
+    */
+	args[0] = strdup(cfg.getValue("capture.progname"));				// Name of the executable
+	args[1] = strdup("-n");											// No preview
+	args[2] = strdup("-s");											// Wait for signal to capture
+	args[3] = strdup("-e");											// Output image format
+	args[4] = strdup(cfg.getValue("capture.encoding"));
+	args[5] = strdup("-q");											// JPEG quality
+	args[6] = strdup(cfg.getValue("capture.jpgquality"));
+	args[7] = strdup("-fs");										// Start frame number
+	args[8] = strdup("1");
+	args[9] = strdup("-w");											// Image width
+	args[10] = strdup(cfg.getValue("capture.hres"));
+	args[11] = strdup("-h");										// Image height
+	args[12] = strdup(cfg.getValue("capture.vres"));
+	args[13] = strdup("-ISO");										// ISO
+	args[14] = strdup(cfg.getValue("capture.iso"));
+	args[15] = strdup("-o");										// Output filename format
+	args[16] = strdup(cfg.getValue("capture.outputtemplate"));
+	args[17] = (char *)NULL;
+
+	pid = fork();
+
+	if (pid == -1) {
+		log.logError("Fork failed...");
+		cleanup();
+		exit(-1);
+	}
+	else if (pid == 0) {
+		/*
+		** Child process...
+		*/
+		pid = getpid();
+
+		pipeFd = open("bctlPidPipe", O_WRONLY);
+
+		if (pipeFd < 0) {
+			fprintf(stderr, "Failed to open named pipe bctlPidPipe");
+			cleanup();
+			exit(-1);
+		}
+
+		write(pipeFd, &pid, sizeof(pid_t));
+
+		fprintf(stderr, "Child process forked with pid %d\n", pid);
+
+		fprintf(
+			stderr,
+			"Running process: %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n", 
+			args[0], 
+			args[1], 
+			args[2], 
+			args[3], 
+			args[4], 
+			args[5], 
+			args[6], 
+			args[7], 
+			args[8],
+			args[9],
+			args[10],
+			args[11],
+			args[12],
+			args[13],
+			args[14],
+			args[15],
+			args[16]);
+
+		/*
+		** Execute the capture program...
+		*/
+		int rtn = execvp(args[0], args); 
+
+		if (rtn) {
+			fprintf(stderr, "Failed to execute capture process: [%s]\n", strerror(errno));
+			exit(-1);
+		}
+	}
 
 	while (1) {
 		PosixThread::sleep(PosixThread::seconds, 5L);

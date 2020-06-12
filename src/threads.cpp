@@ -1,6 +1,7 @@
 #include <string>
 #include <stdint.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <errno.h>
 
@@ -40,6 +41,7 @@ void * CaptureThread::run()
 {
 	bool			go = true;
 	unsigned long	frequency;
+	pid_t			pid;
 
 	ConfigManager & cfg = ConfigManager::getInstance();
 	Logger & log = Logger::getInstance();
@@ -48,15 +50,28 @@ void * CaptureThread::run()
 
 	log.logDebug("Capture frequency read as %ld", frequency);
 
+	int pipeFd = open("bctlPidPipe", O_RDONLY);
+
+	if (pipeFd < 0) {
+		log.logFatal("Failed to open named pipe bctlPidPipe");
+		exit(-1);
+	}
+
+	read(pipeFd, &pid, sizeof(pid_t));
+
+	log.logDebug("Got capture process PID %d", pid);
+
 	while (go) {
 		log.logDebug("Capturing photo");
 
-		capturePhoto();
+		capturePhoto(pid);
 
 		log.logDebug("Sleeping for %ld seconds zzzz", frequency);
 
 		PosixThread::sleep(PosixThread::seconds, frequency);
 	}
 
+	close(pipeFd);
+	
 	return NULL;
 }
