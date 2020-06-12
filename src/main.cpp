@@ -15,6 +15,8 @@
 #include <signal.h>
 #include <syslog.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "bctl.h"
 #include "bctl_error.h"
@@ -50,6 +52,14 @@ void cleanup(void)
 	closelog();
 
 	close(pipeFd);
+
+	ConfigManager & cfg = ConfigManager::getInstance();
+
+	int status = unlink(cfg.getValue("capture.pipename"));
+
+	if (status) {
+		fprintf(stderr, "Failed to remove pipe: %s\n", strerror(errno));
+	}
 }
 
 void handleSignal(int sigNum)
@@ -289,6 +299,14 @@ int main(int argc, char *argv[])
     /*
     ** Fork and run the capture programe...
     */
+   	const char * pipename = cfg.getValue("capture.pipename");
+   	
+	int status = mkfifo(pipename, 0644);
+
+	if (status) {
+		log.logStatus("Failed to create named pipe %s: %s", pipename, strerror(errno));
+	}
+
    	const char * args[] = {
 		cfg.getValue("capture.progname"),
 		"-n",
@@ -323,10 +341,10 @@ int main(int argc, char *argv[])
 		*/
 		pid = getpid();
 
-		pipeFd = open("bctlPidPipe", O_WRONLY);
+		pipeFd = open(pipename, O_WRONLY);
 
 		if (pipeFd < 0) {
-			fprintf(stderr, "Failed to open named pipe bctlPidPipe");
+			fprintf(stderr, "Failed to open named pipe %s", pipename);
 			cleanup();
 			exit(-1);
 		}

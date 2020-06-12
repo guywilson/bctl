@@ -50,10 +50,12 @@ void * CaptureThread::run()
 
 	log.logDebug("Capture frequency read as %ld", frequency);
 
-	int pipeFd = open("bctlPidPipe", O_RDONLY);
+	const char * pipename = cfg.getValue("capture.pipename");
+
+	int pipeFd = open(pipename, O_RDONLY);
 
 	if (pipeFd < 0) {
-		log.logFatal("Failed to open named pipe bctlPidPipe");
+		log.logFatal("Failed to open named pipe %s", pipename);
 		exit(-1);
 	}
 
