@@ -61,17 +61,17 @@ void * CaptureThread::run()
 
 	log.logDebug("Got capture process PID %d", pid);
 
+	PosixThread::sleep(PosixThread::seconds, 10);
+	
 	while (go) {
 		log.logDebug("Capturing photo");
 
 		capturePhoto(pid);
 
-		log.logDebug("Sleeping for %ld seconds zzzz", frequency);
-
 		PosixThread::sleep(PosixThread::seconds, frequency);
 	}
 
 	close(pipeFd);
-	
+
 	return NULL;
 }

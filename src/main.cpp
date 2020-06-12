@@ -287,13 +287,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	/*
-	 * Start threads...
-	 */
-	ThreadManager & threadMgr = ThreadManager::getInstance();
-
-	threadMgr.startThreads();
-
     /*
     ** Fork and run the capture programe...
     */
@@ -372,6 +365,13 @@ int main(int argc, char *argv[])
 			exit(-1);
 		}
 	}
+
+	/*
+	 * Start threads...
+	 */
+	ThreadManager & threadMgr = ThreadManager::getInstance();
+
+	threadMgr.startThreads();
 
 	while (1) {
 		PosixThread::sleep(PosixThread::seconds, 5L);
