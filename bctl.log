@@ -1,0 +1,5 @@
+[2020-06-12 18:16:38.216787] [STA]Started CaptureThread successfully
+[2020-06-12 18:16:38.217125] [DBG]Got capture process PID 46365
+[2020-06-12 18:16:48.219645] [DBG]Capturing photo
+[2020-06-12 18:16:52.222469] [DBG]Capturing photo
+[2020-06-12 18:16:54.975984] [STA]Detected SIGINT, cleaning up...

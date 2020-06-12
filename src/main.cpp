@@ -152,7 +152,6 @@ int main(int argc, char *argv[])
 	char			cwd[PATH_MAX];
 	int				defaultLoggingLevel = LOG_LEVEL_INFO | LOG_LEVEL_ERROR | LOG_LEVEL_FATAL;
 	pid_t			pid;
-	char * 			args[18];
 
 	CurrentTime::initialiseUptimeClock();
 	
@@ -290,24 +289,26 @@ int main(int argc, char *argv[])
     /*
     ** Fork and run the capture programe...
     */
-	args[0] = strdup(cfg.getValue("capture.progname"));				// Name of the executable
-	args[1] = strdup("-n");											// No preview
-	args[2] = strdup("-s");											// Wait for signal to capture
-	args[3] = strdup("-e");											// Output image format
-	args[4] = strdup(cfg.getValue("capture.encoding"));
-	args[5] = strdup("-q");											// JPEG quality
-	args[6] = strdup(cfg.getValue("capture.jpgquality"));
-	args[7] = strdup("-fs");										// Start frame number
-	args[8] = strdup("1");
-	args[9] = strdup("-w");											// Image width
-	args[10] = strdup(cfg.getValue("capture.hres"));
-	args[11] = strdup("-h");										// Image height
-	args[12] = strdup(cfg.getValue("capture.vres"));
-	args[13] = strdup("-ISO");										// ISO
-	args[14] = strdup(cfg.getValue("capture.iso"));
-	args[15] = strdup("-o");										// Output filename format
-	args[16] = strdup(cfg.getValue("capture.outputtemplate"));
-	args[17] = (char *)NULL;
+   	const char * args[] = {
+		cfg.getValue("capture.progname"),
+		"-n",
+		"-s",
+		"-e",
+		cfg.getValue("capture.encoding"),
+		"-q",
+		cfg.getValue("capture.jpgquality"),
+		"-fs",
+		"1",
+		"-w",
+		cfg.getValue("capture.hres"),
+		"-h",
+		cfg.getValue("capture.vres"),
+		"-ISO",
+		cfg.getValue("capture.iso"),
+		"-o",
+		cfg.getValue("capture.outputtemplate"),
+		(char *)NULL
+	};
 
 	pid = fork();
 
@@ -332,11 +333,19 @@ int main(int argc, char *argv[])
 
 		write(pipeFd, &pid, sizeof(pid_t));
 
-		fprintf(stderr, "Child process forked with pid %d\n", pid);
+		fprintf(stdout, "Child process forked with pid %d\n", pid);
 
-		fprintf(
-			stderr,
-			"Running process: %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n", 
+		fprintf(stdout, "Running process: "); 
+
+		for (int i = 0;i < 17;i++) {
+			fprintf(stdout, "%s ", args[i]);
+		}
+
+		/*
+		** Execute the capture program...
+		*/
+		int rtn = execlp(
+			args[0], 
 			args[0], 
 			args[1], 
 			args[2], 
@@ -345,20 +354,16 @@ int main(int argc, char *argv[])
 			args[5], 
 			args[6], 
 			args[7], 
-			args[8],
-			args[9],
-			args[10],
-			args[11],
-			args[12],
-			args[13],
-			args[14],
-			args[15],
-			args[16]);
-
-		/*
-		** Execute the capture program...
-		*/
-		int rtn = execvp(args[0], args); 
+			args[8], 
+			args[9], 
+			args[10], 
+			args[11], 
+			args[12], 
+			args[13], 
+			args[14], 
+			args[15], 
+			args[16], 
+			args[17]); 
 
 		if (rtn) {
 			fprintf(stderr, "Failed to execute capture process: [%s]\n", strerror(errno));
