@@ -14,6 +14,7 @@
 #include <time.h>
 #include <signal.h>
 #include <syslog.h>
+#include <sys/wait.h>
 
 #include "bctl.h"
 #include "bctl_error.h"
